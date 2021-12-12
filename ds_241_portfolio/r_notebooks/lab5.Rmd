@@ -1,0 +1,165 @@
+---
+title: "Lab 04 - La Quinta is Spanish for next to Denny's, Pt. 2"
+author: "Jackson Menoher"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Load packages and data
+
+```{r load-packages, message = FALSE}
+library(tidyverse) 
+library(dsbox) 
+```
+
+```{r load-data, message = FALSE}
+states <- read_csv("states.csv")
+```
+
+### Exercise 1
+```{r}
+dn_ak <- dennys %>%
+  filter(state == "AK")
+nrow(dn_ak)
+```
+
+
+### Exercise 2
+```{r}
+lq_ak <- laquinta %>%
+  filter(state == "AK")
+nrow(lq_ak)
+```
+
+### Exercise 3
+```{r}
+dn_lq_ak <- full_join(dn_ak, lq_ak, by = "state")
+dn_lq_ak
+```
+
+
+### Exercise 4
+```{r}
+nrow(dn_lq_ak)
+```
+Six rows in the full joined dataframe. 
+
+```{r}
+colnames(dn_lq_ak)
+```
+The variable names are shown above. 
+
+### Exercise 5
+```{r}
+haversine <- function(long1, lat1, long2, lat2, round = 3) {
+  # convert to radians
+  long1 = long1 * pi / 180
+  lat1  = lat1  * pi / 180
+  long2 = long2 * pi / 180
+  lat2  = lat2  * pi / 180
+  
+  R = 6371 # Earth mean radius in km
+  
+  a = sin((lat2 - lat1)/2)^2 + cos(lat1) * cos(lat2) * sin((long2 - long1)/2)^2
+  d = R * 2 * asin(sqrt(a))
+  
+  return( round(d,round) ) # distance in km
+}
+```
+
+
+### Exercise 6
+```{r}
+dn_lq_ak <- dn_lq_ak %>% 
+  mutate(distance = 
+           haversine(longitude.x, latitude.x, longitude.y, latitude.y,round=4))
+```
+
+### Exercise 7
+```{r}
+dn_lq_ak_mindist <- dn_lq_ak %>%
+  group_by(address.x) %>%
+  summarise(closest = min(distance))
+```
+
+### Exercise 8
+```{r}
+hist(dn_lq_ak_mindist$closest)
+```
+```{r}
+summary(dn_lq_ak_mindist)
+```
+### Exercise 9
+```{r}
+dn_nc <- dennys %>%
+  filter(state == "NC")
+
+lq_nc <- laquinta %>%
+  filter(state == "NC")
+
+dn_lq_nc <- full_join(dn_nc, lq_nc, by = "state")
+
+dn_lq_nc <- dn_lq_nc %>% 
+  mutate(distance = haversine(longitude.x, latitude.x,
+                              longitude.y, latitude.y))
+
+dn_lq_nc_mindist <- dn_lq_nc %>%
+  group_by(address.x) %>%
+  summarise(closest = min(distance))
+
+hist(dn_lq_nc_mindist$closest)
+
+summary(dn_lq_nc_mindist)
+
+```
+
+### Exercise 10
+```{r}
+dn_tx <- dennys %>%
+  filter(state == "TX")
+
+lq_tx <- laquinta %>%
+  filter(state == "TX")
+
+dn_lq_tx <- full_join(dn_tx, lq_tx, by = "state")
+
+dn_lq_tx <- dn_lq_tx %>% 
+  mutate(distance = haversine(longitude.x, latitude.x,
+                              longitude.y, latitude.y))
+
+dn_lq_tx_mindist <- dn_lq_tx %>%
+  group_by(address.x) %>%
+  summarise(closest = min(distance))
+
+hist(dn_lq_tx_mindist$closest)
+
+summary(dn_lq_tx_mindist)
+```
+
+### Exercise 11
+```{r}
+dn_ny <- dennys %>%
+  filter(state == "NY")
+
+lq_ny <- laquinta %>%
+  filter(state == "NY")
+
+dn_lq_ny <- full_join(dn_ny, lq_ny, by = "state")
+
+dn_lq_ny <- dn_lq_ny %>% 
+  mutate(distance = haversine(longitude.x, latitude.x,
+                              longitude.y, latitude.y))
+
+dn_lq_ny_mindist <- dn_lq_ny %>%
+  group_by(address.x) %>%
+  summarise(closest = min(distance))
+
+hist(dn_lq_ny_mindist$closest)
+
+print(mean(dn_lq_ny_mindist$closest))
+print(sd(dn_lq_ny_mindist$closest))
+```
+
+### Exercise 12
+Among the states AK, TX, and NY, Mitch Hedberg's joke is most likely to hold up in Alaska (AK) being that Alaska has the smallest average distance between the Denny's and LaQuinta's establishments. 
